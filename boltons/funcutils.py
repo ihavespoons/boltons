@@ -1044,6 +1044,9 @@ def once(func):
     block until the first execution completes, then all receive the
     cached result.
 
+    If the wrapped function raises, no result is cached and a later call
+    retries it.
+
     This is especially useful in cases like logging, where multiple
     initializations can cause problems.
 
