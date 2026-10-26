@@ -1,5 +1,7 @@
 import threading
 import time
+
+import pytest
 from boltons.funcutils import (copy_function,
                                total_ordering,
                                format_invocation,
@@ -100,6 +102,24 @@ def test_once_executes_only_once():
     assert get_value() == 42
     assert get_value() == 42
     assert call_count == 1
+
+
+def test_once_retries_after_exception():
+    call_count = 0
+
+    @once
+    def get_value():
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            raise ValueError('first attempt failed')
+        return 42
+
+    with pytest.raises(ValueError, match='first attempt failed'):
+        get_value()
+    assert get_value() == 42
+    assert get_value() == 42
+    assert call_count == 2
 
 
 def test_once_caches_result():
